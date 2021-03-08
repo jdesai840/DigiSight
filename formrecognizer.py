@@ -6,20 +6,20 @@ from azure.core.credentials import AzureKeyCredential
 from msrest.authentication import CognitiveServicesCredentials
 from azure.cognitiveservices.speech import AudioDataStream, SpeechConfig, SpeechSynthesizer, SpeechRecognizer, SpeechSynthesisOutputFormat
 from azure.cognitiveservices.speech.audio import AudioOutputConfig
+from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 
 
 endpoint = "https://hackathonformrecog.cognitiveservices.azure.com/"
 key = "10313789480245228ba917ab386fef94"
+cog_key = '51aad77763794bd6a109a32167f646cb'
+cog_endpoint = 'https://cv-hackathon-test.cognitiveservices.azure.com/'
 form_recognizer_client = FormRecognizerClient(endpoint, AzureKeyCredential(key))
 form_training_client = FormTrainingClient(endpoint, AzureKeyCredential(key))
 speech_config = SpeechConfig(subscription="abd6a2f18dca4bba8374ac1887039dff", region="eastus")
 audio_config = AudioOutputConfig(use_default_speaker=True)
 synthesizer = SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
+classifier = ComputerVisionClient(cog_endpoint, CognitiveServicesCredentials(cog_key))
 
-formy = 'https://i.pinimg.com/736x/e8/0e/f3/e80ef353d3cae38810e0d88c1e96bf9d.jpg'
-
-poller = form_recognizer_client.begin_recognize_content_from_url(formy)
-page = poller.result()
 
 def mic_call():
     speech_recognizer= SpeechRecognizer(speech_config=speech_config)
@@ -30,6 +30,9 @@ def mic_call():
     return query
 
 def docu_search():
+    formy = 'https://i.pinimg.com/736x/e8/0e/f3/e80ef353d3cae38810e0d88c1e96bf9d.jpg'
+    poller = form_recognizer_client.begin_recognize_content_from_url(formy)
+    page = poller.result()
     search_array = []
     synthesizer.speak_text_async("Got it, scanning your document. What would you like me to search for?")
     scan_request = mic_call()
@@ -66,17 +69,34 @@ def docu_search():
                 synthesizer.speak_text_async("Alrighty, let me know if you need anything else!")
             else:
                 break
+
+def describe():
+    image_path = ('street.jpg')
+    image_stream = open(image_path, 'rb')
+    description = classifier.describe_image_in_stream(image_stream)
+    for caption in description.captions:
+        print(caption.text)
+        confidence = caption.confidence * 100
+        if confidence < 50:
+            uncertainty_str = 'probably '
+        elif confidence >= 50:
+            uncertainty_str = ''
+        
+        spoken_text = uncertainty_str + caption.text
+        synthesizer.speak_text_async(spoken_text)
     
             
 while True:
     press_button = input("Push the button")
     if press_button == "a":
         pick_feature = mic_call()
+    elif press_button == "b":
+        break
     
     if 'scan' in pick_feature.lower():
         docu_search()
     elif 'describe' in pick_feature.lower():
-        synthesizer.speak_text_async('Processing picture')
+        describe()
         
         
         
