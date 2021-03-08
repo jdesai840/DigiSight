@@ -29,6 +29,7 @@ def mic_call():
     print(query)
     return query
 
+
 def docu_search():
     formy = 'https://i.pinimg.com/736x/e8/0e/f3/e80ef353d3cae38810e0d88c1e96bf9d.jpg'
     poller = form_recognizer_client.begin_recognize_content_from_url(formy)
@@ -70,7 +71,8 @@ def docu_search():
             else:
                 break
 
-def describe():
+
+def describe_image():
     image_path = ('street.jpg')
     image_stream = open(image_path, 'rb')
     description = classifier.describe_image_in_stream(image_stream)
@@ -85,7 +87,17 @@ def describe():
         spoken_text = uncertainty_str + caption.text
         synthesizer.speak_text_async(spoken_text)
     
-            
+
+def docu_read():
+    synthesizer.speak_text_async("Reading text.")
+    formy = 'https://i.pinimg.com/736x/e8/0e/f3/e80ef353d3cae38810e0d88c1e96bf9d.jpg'
+    poller = form_recognizer_client.begin_recognize_content_from_url(formy)
+    page = poller.result()
+    for idx, content in enumerate(page):
+        for line_idx, line in enumerate(content.lines):
+            synthesizer.speak_text_async(line.text)
+    
+    
 while True:
     press_button = input("Push the button")
     if press_button == "a":
@@ -96,20 +108,21 @@ while True:
     if 'scan' in pick_feature.lower():
         docu_search()
     elif 'describe' in pick_feature.lower():
-        describe()
+        describe_image()
+    elif 'read' in pick_feature.lower():
+        docu_read()
         
         
-        
-# 
+
+
+
 # def search_keyword(keyword):
 #     for idx, content in enumerate(page):
 #         for line_idx, line in enumerate(content.lines):
 #             if keyword in line.text or keyword.lower() in line.text:
 #                 print(content.lines[line_idx].text)
 #                 print(content.lines[line_idx + 1].text)
-# 
-# search_keyword('philia')
-
+#
 # for idx, content in enumerate(page):
 #     for line_idx, line in enumerate(content.lines):
 #         print(line.text)
