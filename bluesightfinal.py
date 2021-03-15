@@ -50,26 +50,6 @@ def mic_call2():
         return voice_data
 
 
-def describe_image():
-    camera.capture('describe.jpg')
-    image_path = ('describe.jpg')
-    image_stream = open(image_path, 'rb')
-
-    description = classifier.describe_image_in_stream(image_stream)
-
-    for caption in description.captions:
-        print(caption.text)
-        confidence = caption.confidence * 100
-        if confidence < 50:
-            uncertainty_str = 'probably '
-        elif confidence >= 50:
-            uncertainty_str = ''
-        
-        spoken_text = uncertainty_str + caption.text
-        os.remove('describe.jpg')
-        return spoken_text
-
-
 def directional_guidance():
     camera.capture('guidance.jpg')
     image_path = ('guidance.jpg')
@@ -98,14 +78,17 @@ def directional_guidance():
         return name_array, obj_distance_array, position_array
 
 
-def respond(voice_data):
-    if 'guide' in voice_data:
-        
-    if 'describe' in voice_data:
-        description = describe_image()
-        return description
-    if 'exit' in voice_data:
-        exit()
+def speak(audio_text):
+    tts = gTTS(text=audio_text, lang='en')
+    r = random.randint(1, 2000000)
+    audio_file = 'audio'+ str(r) + '.mp3'
+    tts.save(audio_file)
+    pygame.mixer.music.load(audio_file)
+    pygame.mixer.music.play()
+    while pygame.mixer.music.get_busy() == True:
+        continue
+    os.remove(audio_file)
+
 
 async def run(loop):
     #Establishing a bluetooth connection to the Neosensory Buzz
@@ -199,8 +182,34 @@ async def run(loop):
             while True:
                 await asyncio.sleep(0.1)
                 voice_data=mic_call2()
-                response = respond(voice_data)
-                print(response)
+                if 'guide' or 'direct' in voice data:
+                    speak('What object would you like me to direct you to?')
+                    obj_of_interest = mic_call()
+                        obj_of_interest = obj_of_interest.replace('.', '')
+                        obj_of_interest = obj_of_interest.lower()
+                        names, distances, positions = directional_guidance()
+                        if obj_of_interest in names:
+                            speak("I found a " + obj_of_interest)
+                            index = names.index(obj_of_interest)
+                            position = positions[index]
+                            distance = distances[index]
+                            angle = position * 60
+                            speak("It's " + str(angle) + " degrees from your left")
+                            if position <= 0.45:
+                                intensity = int((.50 - position) * 500)
+                                print('left buzz')
+                                await pattern_left(intensity)
+                            elif position < 0.45 and position > 0.55:
+                                intensity = 200
+                                print('straight buzz')
+                                await pattern_straight(intensity)
+                            elif position >= 0.55:
+                                intensity = int((position - .50) * 500)
+                                print('right buzz')
+                                await pattern_right(intensity)
+                        else:
+                            print('not found buzz')
+                    
                 try:
                     speak(response)
                 except AssertionError:
