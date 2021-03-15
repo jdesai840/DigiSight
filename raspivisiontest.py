@@ -1,3 +1,5 @@
+#Raspberry Pi Azure Vision test
+
 from time import sleep
 from picamera import PiCamera
 from azure.cognitiveservices.vision.computervision import ComputerVisionClient
