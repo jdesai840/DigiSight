@@ -18,12 +18,12 @@ from time import sleep
 
 
 endpoint = "https://hackathonformrecog.cognitiveservices.azure.com/"
-key = "10313789480245228ba917ab386fef94"
-cog_key = '51aad77763794bd6a109a32167f646cb'
+key = "INSERT_KEY"
+cog_key = 'INSERT_KEY'
 cog_endpoint = 'https://cv-hackathon-test.cognitiveservices.azure.com/'
 form_recognizer_client = FormRecognizerClient(endpoint, AzureKeyCredential(key))
 form_training_client = FormTrainingClient(endpoint, AzureKeyCredential(key))
-speech_config = SpeechConfig(subscription="abd6a2f18dca4bba8374ac1887039dff", region="eastus")
+speech_config = SpeechConfig(subscription="INSERT_KEY", region="eastus")
 audio_config = AudioOutputConfig(use_default_speaker=True)
 synthesizer = SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
 classifier = ComputerVisionClient(cog_endpoint, CognitiveServicesCredentials(cog_key))
